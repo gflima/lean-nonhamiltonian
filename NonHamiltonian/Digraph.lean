@@ -3,12 +3,18 @@ Copyright (c) 2026 Guilherme Lima. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 
-import NonHamiltonian.List
-import Std.Data.ExtTreeSet
+module
 
-namespace NonHamiltonian
+public import NonHamiltonian.List
+public import Std.Data.ExtTreeSet
+
+@[expose] public section
 
 /-! # Digraph -/
+
+set_option autoImplicit false
+
+namespace NonHamiltonian
 
 abbrev Node    := Nat
 abbrev Edge    := Nat × Nat
@@ -75,6 +81,11 @@ def isHamiltonian (g : Digraph) : Bool :=
 
 theorem isHamiltonian_iff_hamiltonian (g : Digraph) :
     g.isHamiltonian ↔ g.hamiltonian := by
-  sorry
+  constructor
+  · unfold isHamiltonian hamiltonian
+    intro h; simp at h
+    rcases h with ⟨hl, hr⟩
+    sorry
+  · sorry
 
 end Digraph

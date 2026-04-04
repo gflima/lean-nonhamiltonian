@@ -3,9 +3,18 @@ Copyright (c) 2026 Guilherme Lima. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 -/
 
-namespace List
+module
 
+@[expose] public section
+
+/-! # Extra operations on `List` -/
+
+set_option autoImplicit false
+
+universe u
 variable {α : Type u}
+
+namespace List
 
 /-- Computes all permutations of the given list. -/
 def perms : List α → List (List α)
