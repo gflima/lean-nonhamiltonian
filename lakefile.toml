@@ -1,0 +1,15 @@
+name = "NonHamiltonian"
+version = "0.1.0"
+defaultTargets = ["nonhamiltonian"]
+testDriver = "NonHamiltonianTests"
+
+[[lean_lib]]
+name = "NonHamiltonian"
+
+[[lean_lib]]
+name = "NonHamiltonianTests"
+globs = ["NonHamiltonianTests.+"]
+
+[[lean_exe]]
+name = "nonhamiltonian"
+root = "Main"
