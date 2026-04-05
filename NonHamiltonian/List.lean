@@ -18,7 +18,7 @@ namespace List
 
 /-! ## connect -/
 
-/-- Constructs the list of pairs of consecutive elements in list. -/
+/-- The list of pairs of consecutive elements in list. -/
 def connect : List α → List (α × α)
   | [] => []
   | a :: l =>

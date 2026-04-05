@@ -22,12 +22,20 @@ def g₀ : Digraph := {
 def p₀ : Digraph.HamiltonianPath g₀ :=
   {path := [0]}
 
-example : g₀.hamiltonian := by
+example : g₀.Hamiltonian := by
   exact Nonempty.intro p₀
 
 /-- info: true -/
 #guard_msgs in
 #eval g₀.isHamiltonian
+
+/-- info: true -/
+#guard_msgs in
+#eval decide g₀.Hamiltonian
+
+/-- info: true -/
+#guard_msgs in
+#eval g₀.findHamiltonianPath?.isSome
 
 def g₁ : Digraph := {
   nodes := {0, 1, 2, 3, 4},
@@ -48,12 +56,20 @@ def p₁ : Digraph.HamiltonianPath g₁ := {
   path := [0, 3, 4, 2, 1]
 }
 
-example : g₁.hamiltonian := by
+example : g₁.Hamiltonian := by
   exact Nonempty.intro p₁
 
 /-- info: true -/
 #guard_msgs in
 #eval g₁.isHamiltonian
+
+/-- info: true -/
+#guard_msgs in
+#eval decide g₁.Hamiltonian
+
+/-- info: some [0, 3, 4, 2, 1] -/
+#guard_msgs in
+#eval g₁.findHamiltonianPath?.map (·.path)
 
 def g₂ : Digraph := {
   nodes := {0, 1, 2, 3, 4},
@@ -62,3 +78,11 @@ def g₂ : Digraph := {
 /-- info: false -/
 #guard_msgs in
 #eval g₂.isHamiltonian
+
+/-- info: false -/
+#guard_msgs in
+#eval decide g₂.isHamiltonian
+
+/-- info: true -/
+#guard_msgs in
+#eval g₂.findHamiltonianPath?.isNone
