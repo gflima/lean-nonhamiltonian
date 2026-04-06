@@ -19,46 +19,48 @@ inductive Formula (g : Digraph) where
   | and : Formula g → Formula g → Formula g
   | or  : Formula g → Formula g → Formula g
   | imp : Formula g → Formula g → Formula g
-  deriving Repr
+  deriving Repr, Ord
 
 namespace Formula
 
 variable {g : Digraph}
 
-def cmp : Formula g → Formula g → Ordering
-  | .X i n .., .X i' n' .. => (compare i i').then (compare n n')
-  | .X .., _ => .lt
-  | .bot, .bot => .eq
-  | .bot, _ => .lt
-  | .and φ ψ, .and φ' ψ' => (cmp φ φ').then (cmp ψ ψ')
-  | .and .., _ => .lt
-  | .or φ ψ, .or φ' ψ' => (cmp φ φ').then (cmp ψ ψ')
-  | .or .., _ => .lt
-  | .imp φ ψ, .imp φ' ψ' => (cmp φ φ').then (cmp ψ ψ')
-  | .imp .., _ => .lt
+-- def cmp : Formula g → Formula g → Ordering
+--   | .X i n .., .X i' n' .. => (compare i i').then (compare n n')
+--   | .X .., _ => .lt
+--   | _, .X .. => .gt
+--   | .bot, .bot => .eq
+--   | .bot, _ => .lt
+--   | _, .bot => .gt
+--   | .and φ ψ, .and φ' ψ' => (cmp φ φ').then (cmp ψ ψ')
+--   | .and .., _ => .lt
+--   | _, .and .. => .gt
+--   | .or φ ψ, .or φ' ψ' => (cmp φ φ').then (cmp ψ ψ')
+--   | .or .., _ => .lt
+--   | _, .or .. => .gt
+--   | .imp φ ψ, .imp φ' ψ' => (cmp φ φ').then (cmp ψ ψ')
 
-instance : Ord (Formula g) where
-  compare := Formula.cmp
+-- instance : Ord (Formula g) where
+--   compare := Formula.cmp
 
 instance : LT (Formula g) := ltOfOrd
 instance : LE (Formula g) := leOfOrd
 instance : Min (Formula g) := minOfLe
 instance : Max (Formula g) := maxOfLe
 
--- theorem eq_swap {φ ψ : Formula g} :
---     compare φ ψ = (compare ψ φ).swap := by
---   simp [compare]
---   induction φ with
---   | X i n _ _ =>
---     cases ψ with
---     | X i' n' _ _ => simp [cmp]; sorry
---     | bot => rw [cmp]
---     | and => sorry
---     | _ => sorry
---   | bot => sorry
---   | and φ₁ φ₂ ih₁ ih₂ => sorry
---   | or φ₁ φ₂ ih₁ ih₂ => sorry
---   | imp φ₁ φ₂ ih₁ ih₂ => sorry
+theorem eq_swap {φ ψ : Formula g} :
+    compare φ ψ = (compare ψ φ).swap := by
+  simp [compare]
+  induction φ with
+  | X i n _ _ =>
+    cases ψ with
+    | X i' n' _ _ => sorry
+    | bot => sorry
+    | _ => sorry
+  | bot => sorry
+  | and φ₁ φ₂ ih₁ ih₂ => sorry
+  | or φ₁ φ₂ ih₁ ih₂ => sorry
+  | imp φ₁ φ₂ ih₁ ih₂ => sorry
 
 end Formula
 
@@ -78,7 +80,7 @@ def g : Digraph := {
     (2, 1), (3, 2), (3, 4),
     (4, 1), (4, 2), (4, 3)}}
 
-#eval (g.X 4 4) <  Formula.bot
+#eval (g.X 4 4) <  (g.X 3 4)
 
 
 -- set_option trace.Meta.synthInstance true
