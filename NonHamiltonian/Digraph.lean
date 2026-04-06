@@ -6,7 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import NonHamiltonian.List
-public import Std.Data.ExtTreeSet
+public import NonHamiltonian.Set
 
 @[expose] public section
 
@@ -16,10 +16,11 @@ set_option autoImplicit false
 
 namespace NonHamiltonian
 
-abbrev Node    := Nat
-abbrev Edge    := Nat × Nat
-abbrev NodeSet := Std.ExtTreeSet Node
-abbrev EdgeSet := Std.ExtTreeSet Edge lexOrd.compare
+abbrev Node           := Nat
+abbrev Edge           := Nat × Nat
+instance : Ord (Edge) := lexOrd
+abbrev NodeSet        := Set Node
+abbrev EdgeSet        := Set Edge
 
 structure Digraph where
   nodes          : NodeSet
@@ -27,7 +28,7 @@ structure Digraph where
   nodes_nonempty : nodes ≠ ∅ := by decide
   edges_endnodes : edges.toList.all (λ (l,r) ↦
     nodes.contains l && nodes.contains r) := by decide
-  deriving Repr
+  deriving Repr, DecidableEq
 
 namespace Digraph
 
