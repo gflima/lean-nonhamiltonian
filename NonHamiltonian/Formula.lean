@@ -7,6 +7,8 @@ module
 
 public import NonHamiltonian.Digraph
 
+@[expose] public section
+
 /-! # Formula -/
 
 set_option autoImplicit false
@@ -18,6 +20,7 @@ open Std
 inductive Formula {α : Type u} [Ord α] [TransOrd α] [LawfulEqOrd α]
     (g : Digraph α) where
   | vis (i : Nat) (a : α) : i < g.nodes.size → a ∈ g.nodes → Formula g
+  | top : Formula g
   | bot : Formula g
   | and : Formula g → Formula g → Formula g
   | or  : Formula g → Formula g → Formula g
@@ -35,12 +38,15 @@ abbrev neg (p : Formula g) : Formula g :=
 /-- Compares formulas lexicographically. -/
 def cmp : Formula g → Formula g → Ordering
   | vis i a .., vis i' a' .. => (compare i i').then (compare a a')
+  | top, top => .eq
   | bot, bot => .eq
   | and p q, and p' q' => (cmp p p').then (cmp q q')
   | or p q, or p' q' => (cmp p p').then (cmp q q')
   | imp p q, imp p' q' => (cmp p p').then (cmp q q')
   | vis .., _ => .lt
   | _, vis .. => .gt
+  | top, _ => .lt
+  | _, top => .gt
   | bot, _ => .lt
   | _ , bot => .gt
   | and .., _ => .lt
@@ -52,6 +58,7 @@ theorem eq_of_cmp_isEq {p q : Formula g} :
     (cmp p q).isEq → p = q := by
   induction p generalizing q with
   | vis i a _ _ => cases q <;> simp [cmp]
+  | top => cases q <;> simp [cmp]
   | bot => cases q <;> simp [cmp]
   | and _ _ ih₁ ih₂ =>
     cases q <;> simp [cmp]; simp only [← Ordering.isEq_iff_eq_eq]
@@ -147,16 +154,17 @@ theorem cmp_isLE_trans {p q r : Formula g} :
         · right; exact tα.isLE_trans le_ab le_bc
       | _ => simp [cmp]
     | _ => simp [cmp]
+  | top => cases p <;> cases r <;> simp [cmp]
   | bot => cases p <;> cases r <;> simp [cmp]
   | and _ _ ih₁ ih₂ =>
     cases p <;> cases r <;> simp [cmp, Ordering.isLE_then_iff_and]
-    exact _cmp_isLE_trans_aux ih₁ ih₂
+    exact Formula._cmp_isLE_trans_aux ih₁ ih₂
   | or _ _ ih₁ ih₂ =>
     cases p <;> cases r <;> simp [cmp, Ordering.isLE_then_iff_and]
-    exact _cmp_isLE_trans_aux ih₁ ih₂
+    exact Formula._cmp_isLE_trans_aux ih₁ ih₂
   | imp _ _ ih₁ ih₂ =>
     cases p <;> cases r <;> simp [cmp, Ordering.isLE_then_iff_and]
-    exact _cmp_isLE_trans_aux ih₁ ih₂
+    exact Formula._cmp_isLE_trans_aux ih₁ ih₂
 
 instance : Ord (Formula g) where
   compare := cmp
@@ -175,11 +183,29 @@ instance : LawfulEqOrd (Formula g) where
 
 end Formula
 
-/-- Builds formula stating that node `a` is visited at step `i`. -/
-def Digraph.V {α : Type u} [Ord α] [TransOrd α] [LawfulEqOrd α]
-    (g : Digraph α) (i : Nat) (a : α)
+namespace Digraph
+variable {α : Type u} [Ord α] [tα : TransOrd α] [LawfulEqOrd α]
+
+/-- Builds a formula stating that node `a` is visited at step `i`. -/
+def V (g : Digraph α) (i : Nat) (a : α)
     (hi : i < g.nodes.size := by decide)
     (ha : a ∈ g.nodes := by decide) : Formula g :=
   .vis i a hi ha
 
-end NonHamiltonian
+/-- Builds a formula stating that node `a` is visited in some step. -/
+def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) :
+    Formula g :=
+  ((g.nodes.toList).mapFinIdx (λ i _ hi ↦ g.V i a
+    (by rw [← g.nodes.length_toList]; exact hi) ha)).foldr
+      Formula.or Formula.top
+
+def g₁ : Digraph Nat := {
+  nodes := {0, 1, 2, 3, 4},
+  edges :=
+   {(0, 1), (0, 2), (0, 3),
+    (2, 1), (3, 2), (3, 4),
+    (4, 1), (4, 2), (4, 3)}}
+
+#eval g₁.A 2
+
+end Digraph
