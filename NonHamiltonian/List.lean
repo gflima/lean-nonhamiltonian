@@ -11,10 +11,9 @@ module
 
 set_option autoImplicit false
 
+namespace List
 universe u
 variable {α : Type u}
-
-namespace List
 
 /-! ## connect -/
 

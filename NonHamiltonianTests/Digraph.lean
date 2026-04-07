@@ -6,7 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 import NonHamiltonian
 open NonHamiltonian
 
-def g₀ : Digraph := {
+def g₀ : Digraph Nat := {
   nodes := {0},
   edges := ∅,
 }
@@ -37,7 +37,7 @@ example : g₀.Hamiltonian := by
 #guard_msgs in
 #eval g₀.findHamiltonianPath?.isSome
 
-def g₁ : Digraph := {
+def g₁ : Digraph Nat := {
   nodes := {0, 1, 2, 3, 4},
   edges :=
    {(0, 1), (0, 2), (0, 3),
@@ -71,7 +71,7 @@ example : g₁.Hamiltonian := by
 #guard_msgs in
 #eval g₁.findHamiltonianPath?.map (·.path)
 
-def g₂ : Digraph := {
+def g₂ : Digraph Nat := {
   nodes := {0, 1, 2, 3, 4},
   edges := {(0, 1), (1, 2)}}
 
@@ -86,3 +86,16 @@ def g₂ : Digraph := {
 /-- info: true -/
 #guard_msgs in
 #eval g₂.findHamiltonianPath?.isNone
+
+def s : Digraph String := {
+  nodes := {"a", "b", "c"},
+  edges := {("a", "a"), ("a", "b"), ("b", "c")},
+}
+
+/-- info: true -/
+#guard_msgs in
+#eval s.isHamiltonian
+
+/-- info: some ["a", "b", "c"] -/
+#guard_msgs in
+#eval s.findHamiltonianPath?.map (·.path)
