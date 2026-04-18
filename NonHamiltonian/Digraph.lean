@@ -96,18 +96,17 @@ theorem path_conn_subset_edges {g : Digraph α} {p : HamiltonianPath g} :
 
 end Digraph.HamiltonianPath
 
-
-/-! ## The Hamiltonian property -/
+/-! ## The Hamiltonian path property -/
 
 namespace Digraph
 variable {α : Type u} [LinearOrder α]
 
-/-- Logical characterization of the Hamiltonian property. -/
-def Hamiltonian (g : Digraph α) : Prop :=
+/-- Logical characterization of the Hamiltonian path property. -/
+def HasHamiltonianPath (g : Digraph α) : Prop :=
   Nonempty (HamiltonianPath g)
 
-/-- Algorithmic characterization of the Hamiltonian property. -/
-def isHamiltonian (g : Digraph α) : Bool :=
+/-- Algorithmic characterization of the Hamiltonian path property. -/
+def hasHamiltonianPath (g : Digraph α) : Bool :=
   g.nodeList.perms.any (fun p => p.connect.all (fun e => decide (e ∈ g.edges)))
 
 /-- Searches for a Hamiltonian path in `g` by trying all permutations of its
@@ -119,16 +118,16 @@ def findHamiltonianPath? (g : Digraph α) : Option (HamiltonianPath g) :=
         return some ⟨p, List.perm_of_mem_perms hperm, hconn⟩
     return none
 
-/-- `isHamiltonian` decides `Hamiltonian`: the boolean check is equivalent to
-  the existence of a Hamiltonian path. -/
-theorem isHamiltonian_iff_Hamiltonian {g : Digraph α} :
-    g.isHamiltonian ↔ g.Hamiltonian := by
-  rw [isHamiltonian, List.any_eq_true, Hamiltonian]
+/-- `hasHamiltonianPath` decides `HasHamiltonianPath`: the boolean check is
+  equivalent to the existence of a Hamiltonian path. -/
+theorem hasHamiltonianPath_iff_HasHamiltonianPath {g : Digraph α} :
+    g.hasHamiltonianPath ↔ g.HasHamiltonianPath := by
+  rw [hasHamiltonianPath, List.any_eq_true, HasHamiltonianPath]
   constructor <;> rintro ⟨p, hperm, hconn⟩
   · exact Nonempty.intro ⟨p, List.perm_of_mem_perms hperm, hconn⟩
   · exact ⟨p, List.mem_perms_of_perm hperm, hconn⟩
 
-instance (g : Digraph α) : Decidable (g.Hamiltonian) :=
-  decidable_of_iff (g.isHamiltonian) isHamiltonian_iff_Hamiltonian
+instance (g : Digraph α) : Decidable (g.HasHamiltonianPath) :=
+  decidable_of_iff (g.hasHamiltonianPath) hasHamiltonianPath_iff_HasHamiltonianPath
 
 end Digraph
