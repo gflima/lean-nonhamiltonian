@@ -7,9 +7,11 @@ A Lean 4 formalization of **Claim 2.2** from:
 
 ## Background
 
-The paper argues about the compressibility of natural deduction proofs in the
-purely implicational fragment of intuitionistic propositional logic
-(**IPC**<sub>→</sub>, in the paper the authors used the notation **M**<sub>imp</sub> and **NM**<sub>imp</sub> for the natural deduction system for this logic, we adopt a more conventional notation).
+The paper argues about the compressibility of natural deduction proofs
+in the purely implicational fragment of intuitionistic propositional
+logic (**IPC**<sub>→</sub>, in the paper the authors used the notation
+**M**<sub>imp</sub> and **NM**<sub>imp</sub> for the natural deduction
+system for this logic, we adopt a more conventional notation).
 
 **Claim 2.2** concerns the Hamiltonicity of directed graphs. Recall:
 
@@ -19,9 +21,9 @@ purely implicational fragment of intuitionistic propositional logic
 
 The claim states:
 
-> For any digraph *G*, ¬ `HamiltonianPath G` if and only if there exists a normal
-> natural deduction proof *π* of ¬ α(*G*) in **IPC**<sub>→</sub> whose height is
-> polynomial in |*V*(*G*)|.
+> For any digraph *G*, `¬ hasHamiltonianPath *G*` if and only if there
+> exists a normal natural deduction proof *π* of `¬ α(*G*)` in
+> **IPC**<sub>→</sub> whose height is polynomial in |V(*G*)|.
 
 Here α(*G*) is a formula encoding the Hamiltonian path property of *G* in **IPC**<sub>→</sub>.
 
