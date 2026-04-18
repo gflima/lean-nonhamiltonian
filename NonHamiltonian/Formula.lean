@@ -53,13 +53,5 @@ def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) :
     (by rw [← Finset.length_sort (· ≤ ·)]; exact hi) ha)).foldr
       Formula.or Formula.top
 
-def g₁ : Digraph Nat := {
-  nodeList := {0, 1, 2, 3, 4},
-  edges :=
-   {(0, 1), (0, 2), (0, 3),
-    (2, 1), (3, 2), (3, 4),
-    (4, 1), (4, 2), (4, 3)}}
-
-#eval g₁.A 2
 
 end Digraph

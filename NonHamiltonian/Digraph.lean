@@ -47,7 +47,8 @@ theorem zero_lt_nodes_size {g : Digraph α} : 0 < g.nodes.card := by
   rw [← Nat.ne_zero_iff_zero_lt]; exact g.nodes_size_ne_zero
 
 /-- The length of `nodeList` equals the cardinality of `nodes`. -/
-theorem nodeList_length_eq_card {g : Digraph α} : g.nodeList.length = g.nodes.card := by
+theorem nodeList_length_eq_card {g : Digraph α}
+  : g.nodeList.length = g.nodes.card := by
   simp [nodes, List.toFinset_card_of_nodup g.nodes_nodup]
 
 /-- Both endpoints of every edge belong to `g.nodes`. -/
@@ -74,7 +75,8 @@ structure Digraph.HamiltonianPath
 namespace Digraph.HamiltonianPath
 variable {α : Type u} [LinearOrder α]
 
-/-- A Hamiltonian path visits every node exactly once, so its length equals `g.nodes.card`. -/
+/-- A Hamiltonian path visits every node exactly once, so its length equals
+  `g.nodes.card`. -/
 theorem path_length {g : Digraph α} {p : HamiltonianPath g} :
     p.path.length = g.nodes.card := by
   rw [← g.nodeList_length_eq_card]; exact List.Perm.length_eq p.path_perm
