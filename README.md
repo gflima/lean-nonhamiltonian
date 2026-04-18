@@ -9,7 +9,7 @@ A Lean 4 formalization of **Claim 2.2** from:
 
 The paper argues about the compressibility of natural deduction proofs in the
 purely implicational fragment of intuitionistic propositional logic
-(**IPC**<sub>imp</sub>, in the paper the authors used the notation **M**<sub>imp</sub> and **NM**<sub>imp</sub> for the natural deduction system for this logic, we adopt a more conventional notation).
+(**IPC**<sub>→</sub>, in the paper the authors used the notation **M**<sub>imp</sub> and **NM**<sub>imp</sub> for the natural deduction system for this logic, we adopt a more conventional notation).
 
 **Claim 2.2** concerns the Hamiltonicity of directed graphs. Recall:
 
