@@ -29,12 +29,13 @@ Here α(*G*) is a formula encoding the Hamiltonian path property of *G* in **IPC
 
 ## Implementation
 
-The formalization builds on [CSLib](https://github.com/leanprover/cslib) and [Mathlib](https://github.com/leanprover-community/mathlib4).
+The formalization builds on [CSLib](https://github.com/leanprover/cslib) and 
+[Mathlib](https://github.com/leanprover-community/mathlib4).
 
 - **`Digraph`** — directed graphs with a `Finset`-based node set and a `LinearOrder` constraint.
 - **`Formula`** — propositional formulas over a digraph, defined as
-  `Cslib.Logic.PL.Proposition (Atom g)`, where `Atom g` encodes the atomic proposition
-  *"node* a *is visited at step* i*"*.
+  `Cslib.Logic.PL.Proposition (Atom g)`, where `Atom g` encodes the
+  atomic proposition "node *a* is visited at step *i*".
 - **`Derivation`** — a sequent calculus for **IPC**<sub>→</sub>, with an `InferenceSystem`
   instance from CSLib so that `⇓s` denotes a derivation of `s.ctx ⊢ s.conc`.
 
