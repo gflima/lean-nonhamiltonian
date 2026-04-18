@@ -19,7 +19,10 @@ namespace NonHamiltonian
 universe u
 open Std
 
-/-- Atomic propositions: "node `a` is visited at step `i`". -/
+/-- Atomic propositions:
+
+ - `vis i a` means that node `a` is visited at step `i`
+ - `bot` used to define the negation  -/
 inductive Atom {α : Type u} [LinearOrder α] (g : Digraph α) where
   | vis (i : Nat) (a : α) : i < g.nodes.card → a ∈ g.nodes → Atom g
   | bot
