@@ -33,19 +33,24 @@ variable {α : Type u} [LinearOrder α]
 /-- The node set as a `Finset`. -/
 def nodes (g : Digraph α) : Finset α := g.nodeList.toFinset
 
+/-- Membership in `g.nodes` is equivalent to membership in `g.nodeList`. -/
 theorem mem_nodes_iff {g : Digraph α} {a : α} : a ∈ g.nodes ↔ a ∈ g.nodeList := by
   simp [nodes, List.mem_toFinset]
 
+/-- The node set is non-empty, so its cardinality is not zero. -/
 theorem nodes_size_ne_zero {g : Digraph α} : g.nodes.card ≠ 0 := by
   simp [nodes, List.toFinset_card_of_nodup g.nodes_nodup,
     List.length_eq_zero_iff, g.nodes_nonempty]
 
+/-- The cardinality of the node set is positive. -/
 theorem zero_lt_nodes_size {g : Digraph α} : 0 < g.nodes.card := by
   rw [← Nat.ne_zero_iff_zero_lt]; exact g.nodes_size_ne_zero
 
+/-- The length of `nodeList` equals the cardinality of `nodes`. -/
 theorem nodeList_length_eq_card {g : Digraph α} : g.nodeList.length = g.nodes.card := by
   simp [nodes, List.toFinset_card_of_nodup g.nodes_nodup]
 
+/-- Both endpoints of every edge belong to `g.nodes`. -/
 theorem edges_endnodes' {g : Digraph α} :
     ∀ e ∈ g.edges, e.1 ∈ g.nodes ∧ e.2 ∈ g.nodes := by
   intro e he
@@ -69,15 +74,18 @@ structure Digraph.HamiltonianPath
 namespace Digraph.HamiltonianPath
 variable {α : Type u} [LinearOrder α]
 
+/-- A Hamiltonian path visits every node exactly once, so its length equals `g.nodes.card`. -/
 theorem path_length {g : Digraph α} {p : HamiltonianPath g} :
     p.path.length = g.nodes.card := by
   rw [← g.nodeList_length_eq_card]; exact List.Perm.length_eq p.path_perm
 
+/-- A Hamiltonian path is non-empty because the graph has at least one node. -/
 theorem path_nonempty {g : Digraph α} {p : HamiltonianPath g} :
     p.path ≠ [] := by
   apply List.ne_nil_of_length_pos; rw [path_length]
   exact g.zero_lt_nodes_size
 
+/-- Every consecutive pair in a Hamiltonian path is an edge of `g`. -/
 theorem path_conn_subset_edges {g : Digraph α} {p : HamiltonianPath g} :
     ∀ e ∈ p.path.connect, e ∈ g.edges := by
   intro e he
@@ -100,6 +108,8 @@ def Hamiltonian (g : Digraph α) : Prop :=
 def isHamiltonian (g : Digraph α) : Bool :=
   g.nodeList.perms.any (fun p => p.connect.all (fun e => decide (e ∈ g.edges)))
 
+/-- Searches for a Hamiltonian path in `g` by trying all permutations of its
+  nodes. Returns `some p` if one is found, `none` otherwise. -/
 def findHamiltonianPath? (g : Digraph α) : Option (HamiltonianPath g) :=
   Id.run do
     for hperm : p in g.nodeList.perms do
@@ -107,6 +117,8 @@ def findHamiltonianPath? (g : Digraph α) : Option (HamiltonianPath g) :=
         return some ⟨p, List.perm_of_mem_perms hperm, hconn⟩
     return none
 
+/-- `isHamiltonian` decides `Hamiltonian`: the boolean check is equivalent to
+  the existence of a Hamiltonian path. -/
 theorem isHamiltonian_iff_Hamiltonian {g : Digraph α} :
     g.isHamiltonian ↔ g.Hamiltonian := by
   rw [isHamiltonian, List.any_eq_true, Hamiltonian]

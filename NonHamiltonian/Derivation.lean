@@ -8,6 +8,7 @@ module
 public import NonHamiltonian.Digraph
 public import NonHamiltonian.Formula
 public import Mathlib.Data.Finset.Basic
+public import Cslib.Foundations.Logic.InferenceSystem
 
 @[expose] public section
 
@@ -20,7 +21,13 @@ universe u
 open Std
 
 /-- Derivation context (a set of formulas). -/
-abbrev Context {α : Type u} [LinearOrder α] (g : Digraph α) := Finset (Formula g)
+abbrev Context {α : Type u} [LinearOrder α] (g : Digraph α) :=
+  Finset (Formula g)
+
+/-- A sequent pairs a context with a conclusion formula. -/
+structure Sequent {α : Type u} [LinearOrder α] (g : Digraph α) where
+  ctx  : Context g
+  conc : Formula g
 
 /-- Derivation of a formula from a context. -/
 inductive Derivation {α : Type u} [LinearOrder α]
@@ -36,6 +43,18 @@ inductive Derivation {α : Type u} [LinearOrder α]
       Γ' = Γ₁ ∪ Γ₂ → Derivation Γ' q
 
 infix:21 " ⊢ " => Derivation
+
+open Cslib.Logic.InferenceSystem in
+/-- `Sequent g` is an inference system: `⇓s` is a derivation of `s.conc` from
+  `s.ctx`. -/
+instance {α : Type u} [LinearOrder α] {g : Digraph α} :
+    Cslib.Logic.InferenceSystem (Sequent g) where
+  derivation s := s.ctx ⊢ s.conc
+
+/-- `s` is derivable if its conclusion follows from its context. -/
+abbrev Sequent.Derivable {α : Type u} [LinearOrder α] {g : Digraph α}
+    (s : Sequent g) : Prop :=
+  Cslib.Logic.InferenceSystem.Derivable s
 
 macro "app " e:term : tactic =>
   `(tactic| apply ($e : _) <;> try simp [Finset.card_insert_of_notMem])

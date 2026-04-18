@@ -4,6 +4,11 @@ I have definitions about graphs, Hamiltonian paths, and intuitionistic propositi
 
 We want to prepare for integration with CSLib, reusing as much as possible the definitions of logics, deductive systems, inference, etc. from CSLib.
 
+# Paper
+
+https://czasopisma.uni.lodz.pl/bulletin/article/view/8755/11670
+
+
 # Commit Messages
 
 We are following the https://www.conventionalcommits.org/en/v1.0.0/
