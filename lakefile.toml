@@ -13,3 +13,12 @@ globs = ["NonHamiltonianTests.+"]
 [[lean_exe]]
 name = "nonhamiltonian"
 root = "Main"
+
+[[require]]
+name = "cslib"
+scope = "leanprover"
+
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+

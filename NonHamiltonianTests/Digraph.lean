@@ -4,20 +4,21 @@ Released under Apache 2.0 license as described in the file LICENSE.
 -/
 
 import NonHamiltonian
+import Mathlib.Data.String.Basic
 open NonHamiltonian
 
 def g₀ : Digraph Nat := {
-  nodes := {0},
+  nodeList := [0],
   edges := ∅,
 }
 
 /-- info: 1 -/
 #guard_msgs in
-#eval g₀.nodes.size
+#eval g₀.nodes.card
 
 /-- info: 0 -/
 #guard_msgs in
-#eval g₀.edges.size
+#eval g₀.edges.card
 
 def p₀ : Digraph.HamiltonianPath g₀ :=
   {path := [0]}
@@ -38,7 +39,7 @@ example : g₀.Hamiltonian := by
 #eval g₀.findHamiltonianPath?.isSome
 
 def g₁ : Digraph Nat := {
-  nodes := {0, 1, 2, 3, 4},
+  nodeList := [0, 1, 2, 3, 4],
   edges :=
    {(0, 1), (0, 2), (0, 3),
     (2, 1), (3, 2), (3, 4),
@@ -46,11 +47,11 @@ def g₁ : Digraph Nat := {
 
 /-- info: 5 -/
 #guard_msgs in
-#eval g₁.nodes.size
+#eval g₁.nodes.card
 
 /-- info: 9 -/
 #guard_msgs in
-#eval g₁.edges.size
+#eval g₁.edges.card
 
 def p₁ : Digraph.HamiltonianPath g₁ := {
   path := [0, 3, 4, 2, 1]
@@ -72,7 +73,7 @@ example : g₁.Hamiltonian := by
 #eval g₁.findHamiltonianPath?.map (·.path)
 
 def g₂ : Digraph Nat := {
-  nodes := {0, 1, 2, 3, 4},
+  nodeList := [0, 1, 2, 3, 4],
   edges := {(0, 1), (1, 2)}}
 
 /-- info: false -/
@@ -88,7 +89,7 @@ def g₂ : Digraph Nat := {
 #eval g₂.findHamiltonianPath?.isNone
 
 def s : Digraph String := {
-  nodes := {"a", "b", "c"},
+  nodeList := ["a", "b", "c"],
   edges := {("a", "a"), ("a", "b"), ("b", "c")},
 }
 

@@ -7,7 +7,8 @@ module
 
 public import NonHamiltonian.Digraph
 public import NonHamiltonian.Formula
-public import Std.Data.ExtTreeSet
+public import Mathlib.Data.Finset.Basic
+public import Cslib.Foundations.Logic.InferenceSystem
 
 @[expose] public section
 
@@ -20,11 +21,16 @@ universe u
 open Std
 
 /-- Derivation context (a set of formulas). -/
-abbrev Context {α : Type u} [Ord α] [TransOrd α] [LawfulEqOrd α]
-    (g : Digraph α) := ExtTreeSet (Formula g)
+abbrev Context {α : Type u} [LinearOrder α] (g : Digraph α) :=
+  Finset (Formula g)
+
+/-- A sequent pairs a context with a conclusion formula. -/
+structure Sequent {α : Type u} [LinearOrder α] (g : Digraph α) where
+  ctx  : Context g
+  conc : Formula g
 
 /-- Derivation of a formula from a context. -/
-inductive Derivation {α : Type u} [Ord α] [TransOrd α] [LawfulEqOrd α]
+inductive Derivation {α : Type u} [LinearOrder α]
     {g : Digraph α} : Context g → Formula g → Prop where
 
   | hypo (p : Formula g) : Derivation {p} p
@@ -38,11 +44,23 @@ inductive Derivation {α : Type u} [Ord α] [TransOrd α] [LawfulEqOrd α]
 
 infix:21 " ⊢ " => Derivation
 
+open Cslib.Logic.InferenceSystem in
+/-- `Sequent g` is an inference system: `⇓s` is a derivation of `s.conc` from
+  `s.ctx`. -/
+instance {α : Type u} [LinearOrder α] {g : Digraph α} :
+    Cslib.Logic.InferenceSystem (Sequent g) where
+  derivation s := s.ctx ⊢ s.conc
+
+/-- `s` is derivable if its conclusion follows from its context. -/
+abbrev Sequent.Derivable {α : Type u} [LinearOrder α] {g : Digraph α}
+    (s : Sequent g) : Prop :=
+  Cslib.Logic.InferenceSystem.Derivable s
+
 macro "app " e:term : tactic =>
-  `(tactic| apply ($e : _) <;> try simp [ExtTreeSet.size_insert])
+  `(tactic| apply ($e : _) <;> try simp [Finset.card_insert_of_notMem])
 
 namespace Derivation
-variable {α : Type u} [Ord α] [tα : TransOrd α] [LawfulEqOrd α]
+variable {α : Type u} [LinearOrder α]
 variable {g : Digraph α} {p q r : Formula g} {Γ Γ₁ Γ₂ : Context g}
 
 example {p : Formula g} : ∅ ⊢ p.imp p := by
@@ -51,9 +69,11 @@ example {p : Formula g} : ∅ ⊢ p.imp p := by
 theorem MP (d₁ : Γ₁ ⊢ p) (d₂ : Γ₂ ⊢ p.imp q) : Γ₁ ∪ Γ₂ ⊢ q := by
   app impE d₁ d₂
 
-theorem imp_trans {d₁ : Γ₁ ⊢ p.imp q} {d₂ : Γ₂ ⊢ q.imp r} :
+theorem imp_trans {d₁ : Γ₁ ⊢ p.imp q} {d₂ : Γ₂ ⊢ q.imp r}
+    (hp₁ : p ∉ Γ₁) (hp₂ : p ∉ Γ₂) :
     Γ₁ ∪ Γ₂ ⊢ p.imp r := by
   app impI (MP (MP (hypo p) d₁) d₂)
-  sorry
+  rw [Finset.erase_eq_of_notMem]
+  simp [hp₁, hp₂]
 
 end Derivation

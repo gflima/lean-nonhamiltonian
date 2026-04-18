@@ -5,6 +5,9 @@ Released under Apache 2.0 license as described in the file LICENSE.
 
 module
 
+public import Mathlib.Data.List.InsertIdx
+public import Mathlib.Data.List.Perm.Basic
+
 @[expose] public section
 
 /-! # Extra operations on `List` -/
@@ -74,13 +77,6 @@ theorem perm_of_mem_perms {l l' : List α} : l' ∈ l.perms → l' ~ l := by
     apply perm_insertIdx
     apply Nat.le_of_lt_add_one hfin.isLt
 
-theorem insertIdx_eraseIdx_self
-    {l : List α} {i : Nat} {a : α} {hi: i < l.length} {ha: a = l[i]} :
-    (l.eraseIdx i).insertIdx i a = l := by
-  induction l generalizing i with
-  | nil => revert hi; simp
-  | cons => cases i with simp_all
-
 theorem mem_perms_of_perm [BEq α] [LawfulBEq α] {l l' : List α} :
     l' ~ l → l' ∈ l.perms := by
   induction l generalizing l' with simp_all [perms]
@@ -101,7 +97,9 @@ theorem mem_perms_of_perm [BEq α] [LawfulBEq α] {l l' : List α} :
         | some j =>
           simp [idxOf?_eq_map_finIdxOf?_val, hir] at hidx
           simp [hidx]; subst j
-          apply insertIdx_eraseIdx_self <;> simp_all
+          have heq : a = l'[↑i] := by simp_all
+          subst heq
+          exact insertIdx_eraseIdx_getElem (by simp_all)
 
 theorem perm_iff_mem_perms [BEq α] [LawfulBEq α] {l l' : List α} :
     l' ~ l ↔ l' ∈ l.perms :=
