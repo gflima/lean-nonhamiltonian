@@ -6,6 +6,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 module
 
 public import NonHamiltonian.Digraph
+public import Mathlib.Data.Finset.Sort
 
 @[expose] public section
 
@@ -17,9 +18,8 @@ namespace NonHamiltonian
 universe u
 open Std
 
-inductive Formula {α : Type u} [Ord α] [TransOrd α] [LawfulEqOrd α]
-    (g : Digraph α) where
-  | vis (i : Nat) (a : α) : i < g.nodes.size → a ∈ g.nodes → Formula g
+inductive Formula {α : Type u} [LinearOrder α] (g : Digraph α) where
+  | vis (i : Nat) (a : α) : i < g.nodes.card → a ∈ g.nodes → Formula g
   | top : Formula g
   | bot : Formula g
   | and : Formula g → Formula g → Formula g
@@ -28,7 +28,7 @@ inductive Formula {α : Type u} [Ord α] [TransOrd α] [LawfulEqOrd α]
   deriving Repr, DecidableEq
 
 namespace Formula
-variable {α : Type u} [Ord α] [tα : TransOrd α] [LawfulEqOrd α]
+variable {α : Type u} [LinearOrder α]
 variable {g : Digraph α}
 
 /-- Builds the negation of `p`. -/
@@ -43,16 +43,16 @@ def cmp : Formula g → Formula g → Ordering
   | and p q, and p' q' => (cmp p p').then (cmp q q')
   | or p q, or p' q' => (cmp p p').then (cmp q q')
   | imp p q, imp p' q' => (cmp p p').then (cmp q q')
-  | vis .., _ => .lt
-  | _, vis .. => .gt
-  | top, _ => .lt
-  | _, top => .gt
-  | bot, _ => .lt
-  | _ , bot => .gt
-  | and .., _ => .lt
-  | _, and .. => .gt
-  | or .., _ => .lt
-  | _, or .. => .gt
+  | vis .., _      => .lt
+  | _     , vis .. => .gt
+  | top   , _      => .lt
+  | _     , top    => .gt
+  | bot   , _      => .lt
+  | _     , bot    => .gt
+  | and .., _      => .lt
+  | _     , and .. => .gt
+  | or .. , _      => .lt
+  | _     , or ..  => .gt
 
 theorem eq_of_cmp_isEq {p q : Formula g} :
     (cmp p q).isEq → p = q := by
@@ -86,8 +86,10 @@ theorem cmp_eq_eq_iff_eq {p q : Formula g} :
 theorem cmp_swap {p q : Formula g} :
     (cmp p q).swap = cmp q p := by
   induction p generalizing q with
-  | vis i a _ _ => cases q <;> simp [cmp, ← i.compare_swap,
-      @tα.eq_swap a, Ordering.swap_then]
+  | vis i a _ _ =>
+    have α_cmp_swap : ∀ (x y : α), (compare x y).swap = compare y x :=
+      fun x y => (OrientedCmp.eq_swap (cmp := (compare : α → α → Ordering)) (a := y) (b := x)).symm
+    cases q <;> simp [cmp, Nat.compare_swap, α_cmp_swap, Ordering.swap_then]
   | _ => cases q <;> simp_all [cmp, Ordering.swap_then]
 
 theorem cmp_eq_lt_of_lt_lt_isLE {p q r : Formula g}
@@ -151,7 +153,7 @@ theorem cmp_isLE_trans {p q r : Formula g} :
         · left; exact Nat.lt_trans lt_ij lt_jk
         · left; exact Nat.lt_of_lt_of_le lt_ij le_jk
         · left; exact Nat.lt_of_le_of_lt le_ij lt_jk
-        · right; exact tα.isLE_trans le_ab le_bc
+        · right; exact TransOrd.isLE_trans le_ab le_bc
       | _ => simp [cmp]
     | _ => simp [cmp]
   | top => cases p <;> cases r <;> simp [cmp]
@@ -184,23 +186,23 @@ instance : LawfulEqOrd (Formula g) where
 end Formula
 
 namespace Digraph
-variable {α : Type u} [Ord α] [tα : TransOrd α] [LawfulEqOrd α]
+variable {α : Type u} [LinearOrder α]
 
 /-- Builds a formula stating that node `a` is visited at step `i`. -/
 def V (g : Digraph α) (i : Nat) (a : α)
-    (hi : i < g.nodes.size := by decide)
+    (hi : i < g.nodes.card := by decide)
     (ha : a ∈ g.nodes := by decide) : Formula g :=
   .vis i a hi ha
 
 /-- Builds a formula stating that node `a` is visited in some step. -/
 def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) :
     Formula g :=
-  ((g.nodes.toList).mapFinIdx (λ i _ hi ↦ g.V i a
-    (by rw [← g.nodes.length_toList]; exact hi) ha)).foldr
+  ((g.nodes.sort (· ≤ ·)).mapFinIdx (fun i _ hi => g.V i a
+    (by rw [← Finset.length_sort (· ≤ ·)]; exact hi) ha)).foldr
       Formula.or Formula.top
 
 def g₁ : Digraph Nat := {
-  nodes := {0, 1, 2, 3, 4},
+  nodeList := {0, 1, 2, 3, 4},
   edges :=
    {(0, 1), (0, 2), (0, 3),
     (2, 1), (3, 2), (3, 4),
