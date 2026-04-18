@@ -3,7 +3,7 @@
 A Lean 4 formalization of **Claim 2.2** from:
 
 > L. Gordeev & E.H. Haeusler (2022). *Proof Compression and NP versus PSPACE II: Addendum.*
-> Bulletin of the Section of Logic, University of Łódź. [[link]](https://czasopisma.uni.lodz.pl/bulletin/article/view/8755/11670)
+> Bulletin of the Section of Logic, University of Łódź. [[link]](https://czasopisma.uni.lodz.pl/bulletin/article/view/8755)
 
 ## Background
 
@@ -27,7 +27,7 @@ Here α(*G*) is a formula encoding the Hamiltonian path property of *G* in **IPC
 
 ## Implementation
 
-The formalization builds on [CSLib](https://github.com/gflima/cslib) and [Mathlib](https://github.com/leanprover-community/mathlib4).
+The formalization builds on [CSLib](https://github.com/leanprover/cslib) and [Mathlib](https://github.com/leanprover-community/mathlib4).
 
 - **`Digraph`** — directed graphs with a `Finset`-based node set and a `LinearOrder` constraint.
 - **`Formula`** — propositional formulas over a digraph, defined as
