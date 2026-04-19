@@ -36,10 +36,10 @@ inductive Derivation {α : Type u} [LinearOrder α]
   | hypo (p : Formula g) : Derivation {p} p
 
   | impI {Γ Γ' : Context g} {p q : Formula g} :
-      Derivation Γ q → p ∈ Γ → Γ' = Γ.erase p → Derivation Γ' (p.imp q)
+      Derivation Γ q → p ∈ Γ → Γ' = Γ.erase p → Derivation Γ' (.impl p q)
 
   | impE {Γ₁ Γ₂ Γ' : Context g} {p q : Formula g} :
-      Derivation Γ₁ p → Derivation Γ₂ (p.imp q) →
+      Derivation Γ₁ p → Derivation Γ₂ (.impl p q) →
       Γ' = Γ₁ ∪ Γ₂ → Derivation Γ' q
 
 infix:21 " ⊢ " => Derivation
@@ -63,15 +63,15 @@ namespace Derivation
 variable {α : Type u} [LinearOrder α]
 variable {g : Digraph α} {p q r : Formula g} {Γ Γ₁ Γ₂ : Context g}
 
-example {p : Formula g} : ∅ ⊢ p.imp p := by
+example {p : Formula g} : ∅ ⊢ .impl p p := by
   app Derivation.impI (Derivation.hypo p)
 
-theorem MP (d₁ : Γ₁ ⊢ p) (d₂ : Γ₂ ⊢ p.imp q) : Γ₁ ∪ Γ₂ ⊢ q := by
+theorem MP (d₁ : Γ₁ ⊢ p) (d₂ : Γ₂ ⊢ .impl p q) : Γ₁ ∪ Γ₂ ⊢ q := by
   app impE d₁ d₂
 
-theorem imp_trans {d₁ : Γ₁ ⊢ p.imp q} {d₂ : Γ₂ ⊢ q.imp r}
+theorem imp_trans {d₁ : Γ₁ ⊢ .impl p q} {d₂ : Γ₂ ⊢ .impl q r}
     (hp₁ : p ∉ Γ₁) (hp₂ : p ∉ Γ₂) :
-    Γ₁ ∪ Γ₂ ⊢ p.imp r := by
+    Γ₁ ∪ Γ₂ ⊢ .impl p r := by
   app impI (MP (MP (hypo p) d₁) d₂)
   rw [Finset.erase_eq_of_notMem]
   simp [hp₁, hp₂]

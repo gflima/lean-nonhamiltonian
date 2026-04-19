@@ -23,16 +23,16 @@ def g₀ : Digraph Nat := {
 def p₀ : Digraph.HamiltonianPath g₀ :=
   {path := [0]}
 
-example : g₀.Hamiltonian := by
+example : g₀.HasHamiltonianPath := by
   exact Nonempty.intro p₀
 
 /-- info: true -/
 #guard_msgs in
-#eval g₀.isHamiltonian
+#eval g₀.hasHamiltonianPath
 
 /-- info: true -/
 #guard_msgs in
-#eval decide g₀.Hamiltonian
+#eval decide g₀.HasHamiltonianPath
 
 /-- info: true -/
 #guard_msgs in
@@ -57,16 +57,16 @@ def p₁ : Digraph.HamiltonianPath g₁ := {
   path := [0, 3, 4, 2, 1]
 }
 
-example : g₁.Hamiltonian := by
+example : g₁.HasHamiltonianPath := by
   exact Nonempty.intro p₁
 
 /-- info: true -/
 #guard_msgs in
-#eval g₁.isHamiltonian
+#eval g₁.hasHamiltonianPath
 
 /-- info: true -/
 #guard_msgs in
-#eval decide g₁.Hamiltonian
+#eval decide g₁.HasHamiltonianPath
 
 /-- info: some [0, 3, 4, 2, 1] -/
 #guard_msgs in
@@ -78,11 +78,11 @@ def g₂ : Digraph Nat := {
 
 /-- info: false -/
 #guard_msgs in
-#eval g₂.isHamiltonian
+#eval g₂.hasHamiltonianPath
 
 /-- info: false -/
 #guard_msgs in
-#eval decide g₂.isHamiltonian
+#eval decide g₂.hasHamiltonianPath
 
 /-- info: true -/
 #guard_msgs in
@@ -95,7 +95,7 @@ def s : Digraph String := {
 
 /-- info: true -/
 #guard_msgs in
-#eval s.isHamiltonian
+#eval s.hasHamiltonianPath
 
 /-- info: some ["a", "b", "c"] -/
 #guard_msgs in

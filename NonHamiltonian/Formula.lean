@@ -7,6 +7,7 @@ module
 
 public import NonHamiltonian.Digraph
 public import Mathlib.Data.Finset.Sort
+public import Cslib.Logics.Propositional.Defs
 
 @[expose] public section
 
@@ -18,24 +19,23 @@ namespace NonHamiltonian
 universe u
 open Std
 
-inductive Formula {α : Type u} [LinearOrder α] (g : Digraph α) where
-  | vis (i : Nat) (a : α) : i < g.nodes.card → a ∈ g.nodes → Formula g
-  | top : Formula g
-  | bot : Formula g
-  | and : Formula g → Formula g → Formula g
-  | or  : Formula g → Formula g → Formula g
-  | imp : Formula g → Formula g → Formula g
-  deriving Repr, DecidableEq
+/-- Atomic propositions:
 
-namespace Formula
-variable {α : Type u} [LinearOrder α]
-variable {g : Digraph α}
+ - `vis i a` means that node `a` is visited at step `i`
+ - `bot` used to define the negation  -/
+inductive Atom {α : Type u} [LinearOrder α] (g : Digraph α) where
+  | vis (i : Nat) (a : α) : i < g.nodes.card → a ∈ g.nodes → Atom g
+  | bot
+  deriving DecidableEq, Repr
 
-/-- Builds the negation of `p`. -/
-abbrev neg (p : Formula g) : Formula g :=
-  .imp p .bot
+instance {α : Type u} [LinearOrder α] {g : Digraph α}
+  : Bot (Atom g) := ⟨.bot⟩
 
-end Formula
+/-- Propositional formulas over a digraph, built from `Atom g` via CSLib's
+    `Proposition`. -/
+abbrev Formula {α : Type u} [LinearOrder α] (g : Digraph α) :=
+  Cslib.Logic.PL.Proposition (Atom g)
+
 
 namespace Digraph
 variable {α : Type u} [LinearOrder α]
@@ -44,14 +44,13 @@ variable {α : Type u} [LinearOrder α]
 def V (g : Digraph α) (i : Nat) (a : α)
     (hi : i < g.nodes.card := by decide)
     (ha : a ∈ g.nodes := by decide) : Formula g :=
-  .vis i a hi ha
+  .atom (.vis i a hi ha)
 
 /-- Builds a formula stating that node `a` is visited in some step. -/
 def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) :
     Formula g :=
   ((g.nodes.sort (· ≤ ·)).mapFinIdx (fun i _ hi => g.V i a
     (by rw [← Finset.length_sort (· ≤ ·)]; exact hi) ha)).foldr
-      Formula.or Formula.top
-
+      .or ⊤
 
 end Digraph
