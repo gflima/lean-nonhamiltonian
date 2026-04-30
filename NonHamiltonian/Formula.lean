@@ -7,6 +7,7 @@ module
 
 public import NonHamiltonian.Digraph
 public import Cslib.Logics.Propositional.Defs
+public import Mathlib.Data.Finset.Prod
 
 @[expose] public section
 
@@ -28,6 +29,23 @@ inductive Atom {α : Type u} [LinearOrder α] (g : Digraph α) where
 
 instance {α : Type u} [LinearOrder α] {g : Digraph α}
   : Bot (Atom g) := ⟨.bot⟩
+
+instance {α : Type u} [LinearOrder α] [Repr α] {g : Digraph α}
+    : Repr (Atom g) where
+  reprPrec a _ := match a with
+    | .vis i x _ _ => "X[" ++ repr i ++ "," ++ repr x ++ "]"
+    | .bot         => "⊥"
+
+instance {α : Type u} [LinearOrder α] [Repr α] {g : Digraph α}
+    : Repr (Cslib.Logic.PL.Proposition (Atom g)) where
+  reprPrec p prec :=
+    let rec go : Cslib.Logic.PL.Proposition (Atom g) → Nat → Lean.Format
+      | .atom a,   _  => repr a
+      | .and a b,  _  => "(" ++ go a 36 ++ " ∧ " ++ go b 36 ++ ")"
+      | .or a b,   _  => "(" ++ go a 35 ++ " ∨ " ++ go b 35 ++ ")"
+      | .impl a (.atom .bot), _ => "(¬" ++ go a 40 ++ ")"
+      | .impl a b, _  => "(" ++ go a 30 ++ " → " ++ go b 30 ++ ")"
+    go p prec
 
 /-- Propositional formulas over a digraph, built from `Atom g` via CSLib's
     `Proposition`. -/
@@ -108,5 +126,20 @@ def E (g : Digraph α) : Formula g :=
             g.V i.val v (nodeList_stepLt i) (nodeList_mem k) →
             ¬ g.V (i.val + 1) w h (nodeList_mem l)
           else ⊤
+
+/-- `E₁`: edges are respected (compact form — iterates only over non-edges).
+    `⋀_{(v,w) ∉ E} ⋀_{i ∈ [n-1]} (X_{i,v} → (X_{i+1,w} → ⊥))` -/
+def E₁ (g : Digraph α) : Formula g :=
+  Formula.bigAnd (g.indices.flatMap fun k =>
+    g.indices.filterMap fun l =>
+      let v := g.nodeList[k.val]'k.isLt
+      let w := g.nodeList[l.val]'l.isLt
+      if (v, w) ∈ g.edges then none
+      else some (⋀ i in g.indices,
+        if h : i.val + 1 < g.nodes.card then
+          g.V i.val v (nodeList_stepLt i) (nodeList_mem k) →
+          ¬ g.V (i.val + 1) w h (nodeList_mem l)
+        else ⊤))
+
 
 end Digraph

@@ -8,6 +8,7 @@ module
 public import NonHamiltonian.List
 public import Mathlib.Data.Finset.Basic
 public import Mathlib.Data.Finset.Card
+public import Mathlib.Data.Finset.Prod
 public import Mathlib.Data.Finset.Sort
 
 @[expose] public section

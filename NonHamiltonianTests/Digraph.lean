@@ -27,6 +27,7 @@ def g₃ : Digraph String := {
   edges := {("a", "a"), ("a", "b"), ("b", "c")} }
 
 
+-- #eval NonHamiltonian.Digraph.E₁ g₂
 -- #eval NonHamiltonian.Digraph.E g₂
 
 /-- info: 1 -/
