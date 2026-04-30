@@ -42,14 +42,10 @@ example {p : Formula g} : (∅ : Theory (Atom g))⇓(p → p) := by
 example {p : Formula g} : (T g)⇓(p → p) := by
   -- T g = ∅, então o objetivo é (∅ : Theory (Atom g))⇓(p → p)
   show (∅ : Theory (Atom g))⇓(p → p)
-  -- ⇓ expande via instância: Theory.Derivation ∅ (p → p)  (dois ∅ distintos)
+  -- ⇓ expande via instância: Theory.Derivation ∅ (p → p)
   show Theory.Derivation (T := ∅) ∅ (Proposition.impl p p)
   -- implI introduz a implicação: basta derivar p de {p}
   exact .implI ∅ (.ass (Finset.mem_insert_self p ∅))
-
-
-macro "app " e:term : tactic =>
-  `(tactic| apply ($e : _) <;> try simp [Finset.card_insert_of_notMem])
 
 
 theorem MP {T : Theory (Atom g)}
