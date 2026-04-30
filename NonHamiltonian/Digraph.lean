@@ -8,6 +8,7 @@ module
 public import NonHamiltonian.List
 public import Mathlib.Data.Finset.Basic
 public import Mathlib.Data.Finset.Card
+public import Mathlib.Data.Finset.Sort
 
 @[expose] public section
 
@@ -21,42 +22,36 @@ open Std
 
 /-- Simple directed graph with nodes of a `LinearOrder` type. -/
 structure Digraph (α : Type u) [LinearOrder α] where
-  nodeList : List α
+  nodes : Finset α
   edges : Finset (α × α)
-  nodes_nodup    : nodeList.Nodup := by decide
-  nodes_nonempty : nodeList ≠ [] := by decide
-  edges_endnodes : ∀ e ∈ edges, e.1 ∈ nodeList ∧ e.2 ∈ nodeList := by decide
+  nodes_nonempty  : nodes.Nonempty := by decide
+  edges_endnodes  : ∀ e ∈ edges, e.1 ∈ nodes ∧ e.2 ∈ nodes := by decide
 
 namespace Digraph
 variable {α : Type u} [LinearOrder α]
 
-/-- The node set as a `Finset`. -/
-def nodes (g : Digraph α) : Finset α := g.nodeList.toFinset
-
-/-- Membership in `g.nodes` is equivalent to membership in `g.nodeList`. -/
-theorem mem_nodes_iff {g : Digraph α} {a : α} : a ∈ g.nodes ↔ a ∈ g.nodeList := by
-  simp [nodes, List.mem_toFinset]
-
 /-- The node set is non-empty, so its cardinality is not zero. -/
-theorem nodes_size_ne_zero {g : Digraph α} : g.nodes.card ≠ 0 := by
-  simp [nodes, List.toFinset_card_of_nodup g.nodes_nodup,
-    List.length_eq_zero_iff, g.nodes_nonempty]
+theorem nodes_card_ne_zero {g : Digraph α} : g.nodes.card ≠ 0 :=
+  Finset.card_ne_zero.mpr g.nodes_nonempty
 
 /-- The cardinality of the node set is positive. -/
-theorem zero_lt_nodes_size {g : Digraph α} : 0 < g.nodes.card := by
-  rw [← Nat.ne_zero_iff_zero_lt]; exact g.nodes_size_ne_zero
+theorem zero_lt_nodes_card {g : Digraph α} : 0 < g.nodes.card :=
+  Finset.card_pos.mpr g.nodes_nonempty
 
-/-- The length of `nodeList` equals the cardinality of `nodes`. -/
-theorem nodeList_length_eq_card {g : Digraph α}
-  : g.nodeList.length = g.nodes.card := by
-  simp [nodes, List.toFinset_card_of_nodup g.nodes_nodup]
+/-- The canonical sorted list of nodes. -/
+def nodeList (g : Digraph α) : List α := g.nodes.sort (· ≤ ·)
 
-/-- Both endpoints of every edge belong to `g.nodes`. -/
-theorem edges_endnodes' {g : Digraph α} :
-    ∀ e ∈ g.edges, e.1 ∈ g.nodes ∧ e.2 ∈ g.nodes := by
-  intro e he
-  rcases g.edges_endnodes e he with ⟨h1, h2⟩
-  exact ⟨mem_nodes_iff.mpr h1, mem_nodes_iff.mpr h2⟩
+theorem nodeList_length {g : Digraph α} : g.nodeList.length = g.nodes.card :=
+  Finset.length_sort _
+
+theorem nodeList_nodup {g : Digraph α} : g.nodeList.Nodup :=
+  Finset.sort_nodup _ _
+
+theorem nodeList_nonempty {g : Digraph α} : g.nodeList ≠ [] :=
+  List.ne_nil_of_length_pos (g.nodeList_length ▸ g.zero_lt_nodes_card)
+
+theorem mem_nodeList_iff {g : Digraph α} {a : α} : a ∈ g.nodeList ↔ a ∈ g.nodes :=
+  Finset.mem_sort _
 
 end Digraph
 
@@ -64,7 +59,7 @@ end Digraph
 /-! ## Hamiltonian Path -/
 
 /-- A Hamiltonian path in a digraph `g` is a list of nodes `path` such that:
-(i) `path` is a permutation of the nodes of `g`; and
+(i) `path` is a permutation of the canonical node list of `g`; and
 (ii) there is an edge in `g` for each consecutive pair of nodes in `path`. -/
 structure Digraph.HamiltonianPath
     {α : Type u} [LinearOrder α] (g : Digraph α) where
@@ -79,13 +74,13 @@ variable {α : Type u} [LinearOrder α]
   `g.nodes.card`. -/
 theorem path_length {g : Digraph α} {p : HamiltonianPath g} :
     p.path.length = g.nodes.card := by
-  rw [← g.nodeList_length_eq_card]; exact List.Perm.length_eq p.path_perm
+  rw [← g.nodeList_length]; exact List.Perm.length_eq p.path_perm
 
 /-- A Hamiltonian path is non-empty because the graph has at least one node. -/
 theorem path_nonempty {g : Digraph α} {p : HamiltonianPath g} :
     p.path ≠ [] := by
   apply List.ne_nil_of_length_pos; rw [path_length]
-  exact g.zero_lt_nodes_size
+  exact g.zero_lt_nodes_card
 
 /-- Every consecutive pair in a Hamiltonian path is an edge of `g`. -/
 theorem path_conn_subset_edges {g : Digraph α} {p : HamiltonianPath g} :
