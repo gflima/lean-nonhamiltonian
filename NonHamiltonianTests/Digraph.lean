@@ -8,9 +8,26 @@ import Mathlib.Data.String.Basic
 open NonHamiltonian
 
 def g₀ : Digraph Nat := {
-  nodeList := [0],
-  edges := ∅,
-}
+  nodes := {0} ,
+  edges := ∅ }
+
+def g₁ : Digraph Nat := {
+  nodes := {0, 1, 2, 3, 4},
+  edges :=
+   {(0, 1), (0, 2), (0, 3),
+    (2, 1), (3, 2), (3, 4),
+    (4, 1), (4, 2), (4, 3)}}
+
+def g₂ : Digraph Nat := {
+  nodes := {0, 1, 2, 3, 4},
+  edges := {(0, 1), (1, 2)}}
+
+def g₃ : Digraph String := {
+  nodes := {"a", "b", "c"},
+  edges := {("a", "a"), ("a", "b"), ("b", "c")} }
+
+
+-- #eval NonHamiltonian.Digraph.E g₂
 
 /-- info: 1 -/
 #guard_msgs in
@@ -38,12 +55,6 @@ example : g₀.HasHamiltonianPath := by
 #guard_msgs in
 #eval g₀.findHamiltonianPath?.isSome
 
-def g₁ : Digraph Nat := {
-  nodeList := [0, 1, 2, 3, 4],
-  edges :=
-   {(0, 1), (0, 2), (0, 3),
-    (2, 1), (3, 2), (3, 4),
-    (4, 1), (4, 2), (4, 3)}}
 
 /-- info: 5 -/
 #guard_msgs in
@@ -72,10 +83,6 @@ example : g₁.HasHamiltonianPath := by
 #guard_msgs in
 #eval g₁.findHamiltonianPath?.map (·.path)
 
-def g₂ : Digraph Nat := {
-  nodeList := [0, 1, 2, 3, 4],
-  edges := {(0, 1), (1, 2)}}
-
 /-- info: false -/
 #guard_msgs in
 #eval g₂.hasHamiltonianPath
@@ -88,15 +95,10 @@ def g₂ : Digraph Nat := {
 #guard_msgs in
 #eval g₂.findHamiltonianPath?.isNone
 
-def s : Digraph String := {
-  nodeList := ["a", "b", "c"],
-  edges := {("a", "a"), ("a", "b"), ("b", "c")},
-}
-
 /-- info: true -/
 #guard_msgs in
-#eval s.hasHamiltonianPath
+#eval g₃.hasHamiltonianPath
 
 /-- info: some ["a", "b", "c"] -/
 #guard_msgs in
-#eval s.findHamiltonianPath?.map (·.path)
+#eval g₃.findHamiltonianPath?.map (·.path)

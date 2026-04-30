@@ -41,6 +41,10 @@ theorem zero_lt_nodes_card {g : Digraph α} : 0 < g.nodes.card :=
 /-- The canonical sorted list of nodes. -/
 def nodeList (g : Digraph α) : List α := g.nodes.sort (· ≤ ·)
 
+-- The shared index set for steps and node positions.
+def indices (g : Digraph α) : List (Fin g.nodeList.length) :=
+  List.finRange g.nodeList.length
+
 theorem nodeList_length {g : Digraph α} : g.nodeList.length = g.nodes.card :=
   Finset.length_sort _
 
@@ -52,6 +56,16 @@ theorem nodeList_nonempty {g : Digraph α} : g.nodeList ≠ [] :=
 
 theorem mem_nodeList_iff {g : Digraph α} {a : α} : a ∈ g.nodeList ↔ a ∈ g.nodes :=
   Finset.mem_sort _
+
+-- Membership of a nodeList element in g.nodes.
+theorem nodeList_mem {g : Digraph α} (i : Fin g.nodeList.length) :
+    g.nodeList[i]'i.isLt ∈ g.nodes :=
+  g.mem_nodeList_iff.mp (List.getElem_mem i.isLt)
+
+-- Converts a nodeList Fin index to a nodes.card bound.
+theorem nodeList_stepLt {g : Digraph α} (i : Fin g.nodeList.length) :
+    i.val < g.nodes.card :=
+  g.nodeList_length ▸ i.isLt
 
 end Digraph
 

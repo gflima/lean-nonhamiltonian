@@ -19,7 +19,6 @@ universe u
 open Std
 
 /-- Atomic propositions:
-
  - `vis i a` means that node `a` is visited at step `i`
  - `bot` used to define the negation  -/
 inductive Atom {α : Type u} [LinearOrder α] (g : Digraph α) where
@@ -47,6 +46,7 @@ def Formula.bigOr {α : Type u} [LinearOrder α] {g : Digraph α}
     (fs : List (Formula g)) : Formula g :=
   fs.foldr .or ⊥
 
+
 namespace Digraph
 variable {α : Type u} [LinearOrder α]
 
@@ -56,20 +56,6 @@ def V (g : Digraph α) (i : Nat) (a : α)
     (ha : a ∈ g.nodes := by decide) : Formula g :=
   .atom (.vis i a hi ha)
 
--- Membership of a nodeList element in g.nodes.
-theorem nodeList_mem {g : Digraph α} (i : Fin g.nodeList.length) :
-    g.nodeList[i.val]'i.isLt ∈ g.nodes :=
-  g.mem_nodeList_iff.mp (List.getElem_mem i.isLt)
-
--- Converts a nodeList Fin index to a nodes.card bound.
-theorem nodeList_stepLt {g : Digraph α} (i : Fin g.nodeList.length) :
-    i.val < g.nodes.card :=
-  g.nodeList_length ▸ i.isLt
-
--- The shared index set for steps and node positions.
-def indices (g : Digraph α) : List (Fin g.nodeList.length) :=
-  List.finRange g.nodeList.length
-
 
 /-- Builds a formula stating that node `a` is visited in some step. -/
 def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) :
@@ -77,7 +63,7 @@ def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) :
   .bigOr (g.indices.map fun i => g.V i.val a (nodeList_stepLt i) ha)
 
 /-- `B`: every vertex is visited at most once.
-    `⋀_{a ∈ V} ⋀_{i ≠ j} (X_{i,a} → (X_{j,a} → ⊥))` -/
+    `⋀_{a ∈ V} ⋀_{i ≠ j} (X_{i,a} → ¬ (X_{j,a}))` -/
 def B (g : Digraph α) : Formula g :=
   .bigAnd (g.indices.map fun i =>
     let a   := g.nodeList[i.val]'i.isLt
