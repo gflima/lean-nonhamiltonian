@@ -16,7 +16,7 @@ set_option autoImplicit false
 
 namespace NonHamiltonian
 universe u
-open Std
+open Std Cslib.Logic.PL
 
 /-- Atomic propositions:
  - `vis i a` means that node `a` is visited at step `i`
@@ -46,6 +46,10 @@ def Formula.bigOr {α : Type u} [LinearOrder α] {g : Digraph α}
     (fs : List (Formula g)) : Formula g :=
   fs.foldr .or ⊥
 
+scoped macro "⋀ " x:ident " in " l:term ", " r:term : term =>
+  `(Formula.bigAnd (List.map (fun $x => $r) $l))
+scoped macro "⋁ " x:ident " in " l:term ", " r:term : term =>
+  `(Formula.bigOr  (List.map (fun $x => $r) $l))
 
 namespace Digraph
 variable {α : Type u} [LinearOrder α]
@@ -58,58 +62,51 @@ def V (g : Digraph α) (i : Nat) (a : α)
 
 
 /-- Builds a formula stating that node `a` is visited in some step. -/
-def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) :
-    Formula g :=
-  .bigOr (g.indices.map fun i => g.V i.val a (nodeList_stepLt i) ha)
+def A (g : Digraph α) (a : α) (ha : a ∈ g.nodes := by decide) : Formula g :=
+  ⋁ i in g.indices, g.V i.val a (nodeList_stepLt i) ha
 
 /-- `B`: every vertex is visited at most once.
     `⋀_{a ∈ V} ⋀_{i ≠ j} (X_{i,a} → ¬ (X_{j,a}))` -/
 def B (g : Digraph α) : Formula g :=
-  .bigAnd (g.indices.map fun i =>
-    let a   := g.nodeList[i.val]'i.isLt
-    let ha  := nodeList_mem i
-    let hi' := nodeList_stepLt i
-    .bigAnd (g.indices.map fun j =>
+  ⋀ i in g.indices,
+    ⋀ j in g.indices,
+      let a  := g.nodeList[i.val]'i.isLt
+      let ha := nodeList_mem i
       if i = j then ⊤
-      else .impl (g.V i.val a hi' ha) (.neg (g.V j.val a (nodeList_stepLt j) ha))))
+      else g.V i.val a (nodeList_stepLt i) ha → ¬ g.V j.val a (nodeList_stepLt j) ha
 
 /-- `C`: at each step at least one vertex is visited.
     `⋀_{i ∈ [n]} ⋁_{a ∈ V} X_{i,a}` -/
 def C (g : Digraph α) : Formula g :=
-  .bigAnd (g.indices.map fun i =>
-    let hi' := nodeList_stepLt i
-    .bigOr (g.indices.map fun k =>
-      g.V i.val (g.nodeList[k.val]'k.isLt) hi' (nodeList_mem k)))
+  ⋀ i in g.indices,
+    ⋁ k in g.indices,
+      g.V i.val (g.nodeList[k.val]'k.isLt) (nodeList_stepLt i) (nodeList_mem k)
 
 /-- `D`: at each step at most one vertex is visited.
     `⋀_{i ∈ [n]} ⋀_{v ≠ w} (X_{i,v} → (X_{i,w} → ⊥))` -/
 def D (g : Digraph α) : Formula g :=
-  .bigAnd (g.indices.map fun i =>
-    let hi' := nodeList_stepLt i
-    .bigAnd (g.indices.map fun k =>
-      let v  := g.nodeList[k.val]'k.isLt
-      let hv := nodeList_mem k
-      .bigAnd (g.indices.map fun l =>
+  ⋀ i in g.indices,
+    ⋀ k in g.indices,
+      ⋀ l in g.indices,
+        let v  := g.nodeList[k.val]'k.isLt
         let w  := g.nodeList[l.val]'l.isLt
-        let hw := nodeList_mem l
         if v = w then ⊤
-        else .impl (g.V i.val v hi' hv) (.neg (g.V i.val w hi' hw)))))
+        else g.V i.val v (nodeList_stepLt i) (nodeList_mem k) →
+             ¬ g.V i.val w (nodeList_stepLt i) (nodeList_mem l)
 
 /-- `E`: edges are respected.
     `⋀_{(v,w) ∉ E} ⋀_{i ∈ [n-1]} (X_{i,v} → (X_{i+1,w} → ⊥))` -/
 def E (g : Digraph α) : Formula g :=
-  .bigAnd (g.indices.map fun k =>
-    let v  := g.nodeList[k.val]'k.isLt
-    let hv := nodeList_mem k
-    .bigAnd (g.indices.map fun l =>
-      let w  := g.nodeList[l.val]'l.isLt
-      let hw := nodeList_mem l
+  ⋀ k in g.indices,
+    ⋀ l in g.indices,
+      let v := g.nodeList[k.val]'k.isLt
+      let w := g.nodeList[l.val]'l.isLt
       if (v, w) ∈ g.edges then ⊤
       else
-        .bigAnd (g.indices.map fun i =>
+        ⋀ i in g.indices,
           if h : i.val + 1 < g.nodes.card then
-            .impl (g.V i.val v (nodeList_stepLt i) hv)
-              (.neg (g.V (i.val + 1) w h hw))
-          else ⊤)))
+            g.V i.val v (nodeList_stepLt i) (nodeList_mem k) →
+            ¬ g.V (i.val + 1) w h (nodeList_mem l)
+          else ⊤
 
 end Digraph
