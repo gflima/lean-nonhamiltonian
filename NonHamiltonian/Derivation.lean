@@ -27,68 +27,52 @@ open Cslib.Logic
 open Cslib.Logic.PL
 open Cslib.Logic.InferenceSystem
 
-/-- Derivation context (a set of formulas).
-abbrev Context {α : Type u} [LinearOrder α] (g : Digraph α) :=
-  Finset (Formula g)
 
-A sequent pairs a context with a conclusion formula.
-structure Sequent {α : Type u} [LinearOrder α] (g : Digraph α) where
-  ctx  : Context g
-  conc : Formula g
 
-Derivation of a formula from a context.
-inductive Derivation {α : Type u} [LinearOrder α]
-    {g : Digraph α} : Context g → Formula g → Prop where
+variable {α : Type u} [LinearOrder α]
+variable {g : Digraph α} {p q r : Formula g} {Γ Γ₁ Γ₂ : Ctx (Atom g)}
 
-  | hypo (p : Formula g) : Derivation {p} p
+def T (g : Digraph α) : Theory (Atom g) := ∅
 
-  | impI {Γ Γ' : Context g} {p q : Formula g} :
-      Derivation Γ q → p ∈ Γ → Γ' = Γ.erase p → Derivation Γ' (.impl p q)
+-- option 1
+example {p : Formula g} : (∅ : Theory (Atom g))⇓(p → p) := by
+  exact .implI ∅ (.ass (by grind))
 
-  | impE {Γ₁ Γ₂ Γ' : Context g} {p q : Formula g} :
-      Derivation Γ₁ p → Derivation Γ₂ (.impl p q) →
-      Γ' = Γ₁ ∪ Γ₂ → Derivation Γ' q
-
-infix:21 " ⊢ " => Derivation
-
-`s` is derivable if its conclusion follows from its context.
-abbrev Sequent.Derivable {α : Type u} [LinearOrder α] {g : Digraph α}
-    (s : Sequent g) : Prop :=
-  Cslib.Logic.InferenceSystem.Derivable s
-
-instance {α : Type u} [LinearOrder α] {g : Digraph α} :
-    InferenceSystem (Formula g) (@Sequent (Atom g)) where
-  derivation s := s.ctx ⊢ s.conc
-
--/
+-- option 2
+example {p : Formula g} : (T g)⇓(p → p) := by
+  -- T g = ∅, então o objetivo é (∅ : Theory (Atom g))⇓(p → p)
+  show (∅ : Theory (Atom g))⇓(p → p)
+  -- ⇓ expande via instância: Theory.Derivation ∅ (p → p)  (dois ∅ distintos)
+  show Theory.Derivation (T := ∅) ∅ (Proposition.impl p p)
+  -- implI introduz a implicação: basta derivar p de {p}
+  exact .implI ∅ (.ass (Finset.mem_insert_self p ∅))
 
 
 macro "app " e:term : tactic =>
   `(tactic| apply ($e : _) <;> try simp [Finset.card_insert_of_notMem])
 
 
-variable {α : Type u} [LinearOrder α]
-variable {g : Digraph α} {p q r : Formula g} {Γ Γ₁ Γ₂ : Ctx (Atom g)}
-
-def T := Theory (Atom g)
-
--- example {p : Formula g} : T⇓(p → p) := by sorry
-#check (Theory (Atom g))
-#check (Proposition (Atom g))
-#check InferenceSystem T (Proposition (Atom g))
-#check instInferenceSystemElemPropositionSequent
+theorem MP {T : Theory (Atom g)}
+  (d₁ : DerivableIn T ((Γ₁) ⊢ p))
+  (d₂ : DerivableIn T ((Γ₂) ⊢ (p → q)))
+  : DerivableIn T ((Γ₁ ∪ Γ₂) ⊢ q) := by
+  obtain ⟨D₁⟩ := d₁
+  obtain ⟨D₂⟩ := d₂
+  exact ⟨.implE (D₂.weak_ctx Finset.subset_union_right)
+                (D₁.weak_ctx Finset.subset_union_left)⟩
 
 
-/-
-theorem MP (d₁ : Γ₁ ⊢ p) (d₂ : Γ₂ ⊢ .impl p q) : Γ₁ ∪ Γ₂ ⊢ q := by
-  app impE d₁ d₂
+theorem imp_trans {T : Theory (Atom g)}
+  (d₁ : DerivableIn T (Γ₁ ⊢ p → q))
+  (d₂ : DerivableIn T (Γ₂ ⊢ q → r))
+  : DerivableIn T ((Γ₁ ∪ Γ₂) ⊢ (p → r)) := by
+  obtain ⟨D₁⟩ := d₁
+  obtain ⟨D₂⟩ := d₂
+  exact ⟨
+    .implI (Γ₁ ∪ Γ₂)
+     (.implE (D₂.weak_ctx (by grind))
+       (.implE (D₁.weak_ctx (by grind))
+        (.ass (Finset.mem_insert_self p _))))⟩
 
-theorem imp_trans {d₁ : Γ₁ ⊢ .impl p q} {d₂ : Γ₂ ⊢ .impl q r}
-    (hp₁ : p ∉ Γ₁) (hp₂ : p ∉ Γ₂) :
-    Γ₁ ∪ Γ₂ ⊢ .impl p r := by
-  app impI (MP (MP (hypo p) d₁) d₂)
-  rw [Finset.erase_eq_of_notMem]
-  simp [hp₁, hp₂]
--/
 
 end NonHamiltonian
